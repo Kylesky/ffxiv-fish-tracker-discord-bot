@@ -15,7 +15,7 @@ const client = new Client({
 
 
 console.log("Precomputing catchable ranges for " + fishes.length + " fish...");
-for(int i=0; i<fishes.length; i++){
+for(let i=0; i<fishes.length; i++){
 	if(i%100 == 0){
 		console.log("Computed for " + i + " fish");
 	}
