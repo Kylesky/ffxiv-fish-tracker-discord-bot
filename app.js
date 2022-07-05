@@ -174,7 +174,10 @@ client.on("messageCreate", (message) => {
 		  
 		  let fishList;
 		  if(fishSet.fish){
-			  fishList = fishSet.fish;
+			  fishList = [];
+			  for(let i=0; i<fishSet.fish; i++){
+				  fishList.push(fishes.find(o => o.name === fishSet.fish[i]));
+			  }
 		  }else if(fishSet.filters){
 			  fishList = fishes.filter(function(fish) {
 				  if(fishSet.filters.expac){
@@ -187,7 +190,7 @@ client.on("messageCreate", (message) => {
 		  
 		  return_message = "Upcoming windows within 24 hours for " + fishSet.name + ":\n";
 		  for(let i=0; i<fishList.length; i++){
-			  let fish = fishes.find(o => o.name === fishList[i]);
+			  let fish = fishList[i];
 			  fishWatcher.updateRangesForFish(fish);
 			  return_message += fish.name + " - ";
 			  
