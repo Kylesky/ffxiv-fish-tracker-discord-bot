@@ -16,13 +16,26 @@ import config from "./config.js";
 
 var rangesPrecomputed = false;
 var fishSets = [ 
-	{"name": "Of Dragons Deep", "fish": ["Titanic Sawfish", "Navigator's Brand", "Helicoprion", "Endoceras", "Namitaro", "Shonisaurus", "Kuno the Killer", "Nepto Dragon"]},
+	{"name": "Of Dragons Deep", "fish": ["Titanic Sawfish", "Navigator's Brand", "Helicoprion", "Endoceras", "Namitaro", "Shonisaurus", "Kuno the Killer", "Nepto Dragon"]}
+];
+
+var filters = [
 	{"name": "A Realm Reborn", "aliases": ["ARR"], "filters": {"expac": 2}},
 	{"name": "Heavensward", "aliases": ["HW"], "filters": {"expac": 3}},
 	{"name": "Stormblood", "aliases": ["SB"], "filters": {"expac": 4}},
 	{"name": "Shadowbringers", "aliases": ["SHB"], "filters": {"expac": 5}},
 	{"name": "Endwalker", "aliases": ["EW"], "filters": {"expac": 6}}
 ];
+
+function checkNameOrAlias(name, object){
+  if(object.name.localeCompare(name, undefined, {sensitivity: 'base'}) === 0) return true;
+  if(object.aliases){
+	  for(let i=0; i<object.aliases.length; i++){
+		  if(object.aliases[i].localeCompare(name, undefined, {sensitivity: 'base'}) === 0) return true;
+	  }
+  }
+  return false;
+};
 
 const SCOUT_COUNT = 20;
 
@@ -103,6 +116,7 @@ client.on("messageCreate", (message) => {
 		  break;
 		  
 		case "fishscout":
+		  let args = args.join(" ");
 		  let uptimeList = [];
 		  
 		  if(!rangesPrecomputed){
@@ -110,7 +124,18 @@ client.on("messageCreate", (message) => {
 			break;
 		  }
 		  
+		  let filter;
+		  if(args.trim() != ""){
+			  filter = filters.find(o => checkNameOrAlias(args, o));
+		  }
+		  
 		  for(let i=0; i<fishes.length; i++){
+			  if(filter) {
+				  if(filter.filters.expac){
+					  if(Math.trunc(fishes[i].patch) != filter.filters.expac) continue;
+				  }
+			  }
+			  
 			  if(fishes[i].catchableRanges.length == 0){
 				fishWatcher.updateRangesForFish(fishes[i]);
 			  }
@@ -155,17 +180,7 @@ client.on("messageCreate", (message) => {
 			fishSetName = fishSetName.substr(1,fishSetName.length-2);
 		  }
 		  
-		  function checkFishSetName(name, fishSet){
-			  if(fishSet.name.localeCompare(name, undefined, {sensitivity: 'base'}) === 0) return true;
-			  if(fishSet.aliases){
-				  for(let i=0; i<fishSet.aliases.length; i++){
-					  if(fishSet.aliases[i].localeCompare(name, undefined, {sensitivity: 'base'}) === 0) return true;
-				  }
-			  }
-			  return false;
-		  }
-		  
-		  let fishSet = fishSets.find(o => checkFishSetName(fishSetName, o));
+		  let fishSet = fishSets.find(o => checkNameOrAlias(fishSetName, o));
 		  
 		  if(!fishSet){
 			  message.channel.send(fishSetName + " not found");
@@ -179,13 +194,13 @@ client.on("messageCreate", (message) => {
 				  fishList.push(fishes.find(o => o.name === fishSet.fish[i]));
 			  }
 		  }else if(fishSet.filters){
-			  fishList = fishes.filter(function(fish) {
-				  if(fishSet.filters.expac){
-					  if(Math.trunc(fish.patch) != fishSet.filters.expac) return false;
-				  }
+			  // fishList = fishes.filter(function(fish) {
+				  // if(fishSet.filters.expac){
+					  // if(Math.trunc(fish.patch) != fishSet.filters.expac) return false;
+				  // }
 				  
-				  return true;
-			  });
+				  // return true;
+			  // });
 		  }
 		  
 		  return_message = "Upcoming windows within 24 hours for " + fishSet.name + ":\n";
