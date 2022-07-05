@@ -14,14 +14,21 @@ const client = new Client({
 });
 import config from "./config.js";
 
+var rangesPrecomputed = false;
+var fishSets = [ {"name": "Of Dragons Deep", "fish": ["Titanic Sawfish", "Navigator's Brand", "Helicoprion", "Endoceras", "Namitaro", "Shonisaurus", "Kuno the Killer", "Nepto Dragon"] } ];
+
 const SCOUT_COUNT = 20;
-// let rangesPrecomputed = false;
+
 client.on("messageCreate", (message) => {
   // Exit and stop if the prefix is not there or if user is a bot
   if (!message.content.startsWith(config.prefix) || message.author.bot) return;
   
   const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
+  
+  let dayLength = 24*60*60*1000;
+  let timestampThreshold = Date.now() + dayLength;
+  let return_message;
   
   try{
 	  switch (command) {
@@ -91,10 +98,10 @@ client.on("messageCreate", (message) => {
 		case "fishscout":
 		  let uptimeList = [];
 		  
-		  // if(!rangesPrecomputed){
-			// message.channel.send("Please wait for first time computation of fish windows...");
-			// rangesPrecomputed = true;
-		  // }
+		  if(!rangesPrecomputed){
+			message.channel.send("Fish rarity still computing. Please try again later...");
+			break;
+		  }
 		  
 		  for(let i=0; i<fishes.length; i++){
 			  if(fishes[i].catchableRanges.length == 0){
@@ -105,9 +112,6 @@ client.on("messageCreate", (message) => {
 		  }
 		  
 		  uptimeList.sort((a, b) => a.uptime - b.uptime);
-		  
-		  let dayLength = 24*60*60*1000;
-		  let timestampThreshold = Date.now() + dayLength;
 		 
 		  let rareFish = [];
 		  for(let i=0; rareFish.length < SCOUT_COUNT; i++){
@@ -116,7 +120,7 @@ client.on("messageCreate", (message) => {
 			  }
 		  }
 		  
-		  let return_message = SCOUT_COUNT + " rarest fish with windows in the next 24 hours.\n"
+		  return_message = SCOUT_COUNT + " rarest fish with windows in the next 24 hours.\n"
 		  for(let i=0; i<SCOUT_COUNT; i++){
 			  fishWatcher.updateRangesForFish(rareFish[i]);
 			  return_message += rareFish[i].name + " - ";
@@ -135,11 +139,68 @@ client.on("messageCreate", (message) => {
 		  }
 		  
 		  message.channel.send(return_message);
+		  break;
+		  
+	    case "fishsetcheck":
+		  let fishSetName = args.join(" ");
+		  
+		  if (fishSetName.charAt(0) === '"' && fishSetName.charAt(fishSetName.length-1) === '"'){
+			fishSetName = fishSetName.substr(1,fishSetName.length-2);
+		  }
+		  
+		  let fishSet = fishSets.find(o => o.name.localeCompare(fishSetName, undefined, {sensitivity: 'base'}) === 0);
+		  
+		  if(!fishSet){
+			  message.channel.send(fishSetName + " not found");
+			  break;
+		  }
+		  
+		  return_message = "Upcoming windows within 24 hours for " + fishSet.name + ":\n";
+		  for(let i=0; i<fishSet.fish.length; i++){
+			  let fish = fishes.find(o => o.name === fishSet.fish[i]);
+			  fishWatcher.updateRangesForFish(fish);
+			  return_message += fish.name + " - ";
+			  
+			  if(eorzeaTime.toEarth(fish.catchableRanges[0].start) <= timestampThreshold){
+				  for(let j=0; j<fish.catchableRanges.length; j++){
+					  let start = eorzeaTime.toEarth(fish.catchableRanges[j].start);
+					  
+					  if(start > timestampThreshold) break;
+					  if(j == 0){
+						  return_message += "<t:"+ start/1000 + ">";
+					  } else {
+						  return_message += ", <t:"+ start/1000 + ">";
+					  }
+				  }
+				return_message += "\n";
+			  }
+		  }
+		  
+		  message.channel.send(return_message);
+		  break;
+			
 	  }
   } catch (err) {
 	  message.channel.send(err.stack);
   }
 
+});
+
+client.on("ready", () => {
+	console.log("Precomputing catchable ranges for " + fishes.length + " fish...");
+
+	for(let i=0; i<fishes.length; i++){
+		if(i%100 == 0){
+			console.log("Computed for " + i + " fish");
+		}
+		
+		if(fishes[i].catchableRanges.length == 0){
+			fishWatcher.updateRangesForFish(fishes[i]);
+		}
+	}
+
+	console.log("Precomputing done...");
+	rangesPrecomputed = true;
 });
 
 client.login(config.token);
