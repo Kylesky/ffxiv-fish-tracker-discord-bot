@@ -12,15 +12,14 @@ import { Client, Intents } from "discord.js";
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 });
-import config from "./config.js";
 
 const SCOUT_COUNT = 20;
 // let rangesPrecomputed = false;
 client.on("messageCreate", (message) => {
   // Exit and stop if the prefix is not there or if user is a bot
-  if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+  if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) return;
   
-  const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+  const args = message.content.slice(process.env.PREFIX.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
   
   try{
@@ -142,4 +141,4 @@ client.on("messageCreate", (message) => {
 
 });
 
-client.login(config.token);
+client.login(process.env.DISCORD_TOKEN);
