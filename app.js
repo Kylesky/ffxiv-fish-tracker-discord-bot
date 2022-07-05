@@ -170,7 +170,7 @@ client.on("messageCreate", (message) => {
 		  let fishList;
 		  if(fishSet.fish){
 			  fishList = [];
-			  for(let i=0; i<fishSet.fish; i++){
+			  for(let i=0; i<fishSet.fish.length; i++){
 				  fishList.push(fishes.find(o => o.name === fishSet.fish[i]));
 			  }
 		  }else if(fishSet.filters){
