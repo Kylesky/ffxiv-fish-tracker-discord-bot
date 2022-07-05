@@ -14,11 +14,17 @@ const client = new Client({
 });
 
 
+console.log("Precomputing catchable ranges for " + fishes.length + " fish...");
 for(int i=0; i<fishes.length; i++){
+	if(i%100 == 0){
+		console.log("Computed for " + i + " fish");
+	}
+	
 	if(fishes[i].catchableRanges.length == 0){
 		fishWatcher.updateRangesForFish(fishes[i]);
 	}
 }
+console.log("Precomputing done...");
 
 const SCOUT_COUNT = 20;
 // let rangesPrecomputed = false;
