@@ -115,7 +115,7 @@ client.on("messageCreate", (message) => {
 		  break;
 		  
 		case "fishscout":
-		  let args = args.join(" ");
+		  let filterName = args.join(" ");
 		  let uptimeList = [];
 		  
 		  if(!rangesPrecomputed){
@@ -124,8 +124,8 @@ client.on("messageCreate", (message) => {
 		  }
 		  
 		  let filter;
-		  if(args.trim() != ""){
-			  filter = filters.find(o => checkNameOrAlias(args, o));
+		  if(filterName.trim() != ""){
+			  filter = filters.find(o => checkNameOrAlias(filterName, o));
 		  }
 		  
 		  for(let i=0; i<fishes.length; i++){
