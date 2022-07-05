@@ -145,22 +145,22 @@ client.on("messageCreate", (message) => {
 		  uptimeList.sort((a, b) => a.uptime - b.uptime);
 		 
 		  let rareFish = [];
-		  for(let i=0; rareFish.length < SCOUT_COUNT; i++){
+		  for(let i=0; rareFish.length < SCOUT_COUNT && i < uptimeList.length; i++){
 			  if(eorzeaTime.toEarth(uptimeList[i].fish.catchableRanges[0].start) <= timestampThreshold){
 				  rareFish.push(uptimeList[i].fish);
 			  }
 		  }
 		  
-		  return_message = SCOUT_COUNT + " rarest fish with windows in the next 24 hours";
+		  return_message = rareFish.length + " rarest fish with windows in the next 24 hours";
 		  if(filter){
 			  return_message += " (" + filter.name + ")";
 		  }
 		  return_message += ".\n";
-		  for(let i=0; i<SCOUT_COUNT; i++){
+		  for(let i=0; i<rareFish.length; i++){
 			  fishWatcher.updateRangesForFish(rareFish[i]);
 			  return_message += rareFish[i].name + " - ";
 			  
-			  for(let j=0; j<rareFish[i].catchableRanges.length; j++){
+			  for(let j=0; j<rareFish[i].catchableRanges.length && j < 5; j++){
 				  let start = eorzeaTime.toEarth(rareFish[i].catchableRanges[j].start);
 				  
 				  if(start > timestampThreshold) break;
