@@ -14,7 +14,14 @@ const client = new Client({
 });
 
 var rangesPrecomputed = false;
-var fishSets = [ {"name": "Of Dragons Deep", "fish": ["Titanic Sawfish", "Navigator's Brand", "Helicoprion", "Endoceras", "Namitaro", "Shonisaurus", "Kuno the Killer", "Nepto Dragon"] } ];
+var fishSets = [ 
+	{"name": "Of Dragons Deep", "fish": ["Titanic Sawfish", "Navigator's Brand", "Helicoprion", "Endoceras", "Namitaro", "Shonisaurus", "Kuno the Killer", "Nepto Dragon"]},
+	{"name": "A Realm Reborn", "aliases": ["ARR"], "filters": {"expac": 2}},
+	{"name": "Heavensward", "aliases": ["HW"], "filters": {"expac": 3}},
+	{"name": "Stormblood", "aliases": ["SB"], "filters": {"expac": 4}},
+	{"name": "Shadowbringers", "aliases": ["SHB"], "filters": {"expac": 5}},
+	{"name": "Endwalker", "aliases": ["EW"], "filters": {"expac": 6}}
+];
 
 const SCOUT_COUNT = 20;
 
@@ -143,16 +150,39 @@ client.on("messageCreate", (message) => {
 			fishSetName = fishSetName.substr(1,fishSetName.length-2);
 		  }
 		  
-		  let fishSet = fishSets.find(o => o.name.localeCompare(fishSetName, undefined, {sensitivity: 'base'}) === 0);
+		  function checkFishSetName(name, fishSet){
+			  if(fishSet.name.localeCompare(name, undefined, {sensitivity: 'base'}) === 0) return true;
+			  if(fishSet.aliases){
+				  for(let i=0; i<fishSet.aliases.length; i++){
+					  if(fishSet.aliases[i].localeCompare(name, undefined, {sensitivity: 'base'}) === 0) return true;
+				  }
+			  }
+			  return false;
+		  }
+		  
+		  let fishSet = fishSets.find(o => checkFishSetName(fishSetName, o));
 		  
 		  if(!fishSet){
 			  message.channel.send(fishSetName + " not found");
 			  break;
 		  }
 		  
+		  let fishList;
+		  if(fishSet.fish){
+			  fishList = fishSet.fish;
+		  }else if(fishSet.filters){
+			  fishList = fishes.filter(function(fish) {
+				  if(fishSet.filters.expac){
+					  if(Math.trunc(fish.patch) != fishSet.filters.expac) return false;
+				  }
+				  
+				  return true;
+			  });
+		  }
+		  
 		  return_message = "Upcoming windows within 24 hours for " + fishSet.name + ":\n";
-		  for(let i=0; i<fishSet.fish.length; i++){
-			  let fish = fishes.find(o => o.name === fishSet.fish[i]);
+		  for(let i=0; i<fishList.length; i++){
+			  let fish = fishes.find(o => o.name === fishList[i]);
 			  fishWatcher.updateRangesForFish(fish);
 			  return_message += fish.name + " - ";
 			  
