@@ -152,7 +152,11 @@ client.on("messageCreate", (message) => {
 			  }
 		  }
 		  
-		  return_message = SCOUT_COUNT + " rarest fish with windows in the next 24 hours.\n"
+		  return_message = SCOUT_COUNT + " rarest fish with windows in the next 24 hours";
+		  if(filter){
+			  return_message += " (" + filter.name + ")";
+		  }
+		  return_message += ".\n";
 		  for(let i=0; i<SCOUT_COUNT; i++){
 			  fishWatcher.updateRangesForFish(rareFish[i]);
 			  return_message += rareFish[i].name + " - ";
