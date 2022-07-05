@@ -1,0 +1,4 @@
+node_modules/
+fish-tracker-orig/
+config.js
+*.bak
