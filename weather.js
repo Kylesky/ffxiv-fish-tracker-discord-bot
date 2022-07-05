@@ -42,7 +42,7 @@ class WeatherService {
   finishedWithIter() {
     // This is basically for testing purposes. It will end our computingWeather timer.
     if (this.computingWeather) {
-      console.timeEnd('computingWeather');
+      // console.timeEnd('computingWeather');
       this.computingWeather = false;
     }
   }
@@ -141,7 +141,7 @@ class WeatherService {
     if (!this.computingWeather) {
       // For testing; make sure you don't reuse the timer.
       this.computingWeather = true;
-      console.time('computingWeather');
+      // console.time('computingWeather');
     }
     // SAFEGUARD
     while (limit-- > 0) {

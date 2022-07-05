@@ -13,6 +13,13 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 });
 
+
+for(int i=0; i<fishes.length; i++){
+	if(fishes[i].catchableRanges.length == 0){
+		fishWatcher.updateRangesForFish(fishes[i]);
+	}
+}
+
 const SCOUT_COUNT = 20;
 // let rangesPrecomputed = false;
 client.on("messageCreate", (message) => {
@@ -90,16 +97,7 @@ client.on("messageCreate", (message) => {
 		case "fishscout":
 		  let uptimeList = [];
 		  
-		  // if(!rangesPrecomputed){
-			// message.channel.send("Please wait for first time computation of fish windows...");
-			// rangesPrecomputed = true;
-		  // }
-		  
 		  for(let i=0; i<fishes.length; i++){
-			  if(fishes[i].catchableRanges.length == 0){
-				fishWatcher.updateRangesForFish(fishes[i]);
-			  }
-			  
 			  uptimeList.push({uptime: fishes[i].uptime(), fish: fishes[i]});
 		  }
 		  
