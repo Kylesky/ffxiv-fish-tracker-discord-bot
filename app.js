@@ -74,7 +74,7 @@ client.on("messageCreate", (message) => {
 			  let start = eorzeaTime.toEarth(fish.catchableRanges[i].start)/1000;
 			  let end = eorzeaTime.toEarth(fish.catchableRanges[i].end)/1000;
 			  let difference = (end-start)/60;
-			  description += "<t:"+ start + "> - <t:" + end + "> (" + difference.toFixed(2) + " minutes)\n";
+			  description += "<t:"+ (~~start) + "> - <t:" + (~~end) + "> (" + difference.toFixed(2) + " minutes)\n";
 		  }
 		  description += "\nBait Path:\n";
 		  
@@ -170,9 +170,9 @@ client.on("messageCreate", (message) => {
 				  
 				  if(start > timestampThreshold) break;
 				  if(j == 0){
-					  return_message += "<t:"+ start/1000 + ">";
+					  return_message += "<t:"+ (~~(start/1000)) + ">";
 				  } else {
-					  return_message += ", <t:"+ start/1000 + ">";
+					  return_message += ", <t:"+ (~~(start/1000)) + ">";
 				  }
 			  }
 			  return_message += "\n";
@@ -223,9 +223,9 @@ client.on("messageCreate", (message) => {
 					  
 					  if(start > timestampThreshold) break;
 					  if(j == 0){
-						  return_message += "<t:"+ start/1000 + ">";
+						  return_message += "<t:"+ (~~(start/1000)) + ">";
 					  } else {
-						  return_message += ", <t:"+ start/1000 + ">";
+						  return_message += ", <t:"+ (~~(start/1000)) + ">";
 					  }
 				  }
 				return_message += "\n";
