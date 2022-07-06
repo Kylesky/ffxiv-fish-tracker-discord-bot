@@ -24,6 +24,13 @@ class FishWatcher {
   }
 
   updateRangesForFish(fish) {
+    var eDate = eorzeaTime.getCurrentEorzeaDate();
+    while (fish.catchableRanges.length > 0 &&
+        dateFnsExt.isSameOrAfter(eDate, fish.catchableRanges[0].end)) {
+      // Remove the first entry from the array.
+      fish.catchableRanges.shift();
+    }
+
     // Need to know if the last range could span periods.
     var lastRangeSpansPeriods = false;
 
