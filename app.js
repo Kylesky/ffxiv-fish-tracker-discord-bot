@@ -60,6 +60,11 @@ client.on("messageCreate", (message) => {
 		  }
 		  
 		  let fish = fishes.find(o => o.id === info.id);
+		  if(!fish){
+			  message.channel.send(info.name_en + " is not tracked");
+			  break;
+		  }
+		  
 		  fishWatcher.updateRangesForFish(fish);
 		  
 		  console.log(fish);
