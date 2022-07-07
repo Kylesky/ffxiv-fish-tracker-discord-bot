@@ -46,7 +46,8 @@ client.on("messageCreate", (message) => {
   const command = args.shift().toLowerCase();
   
   let dayLength = 24*60*60*1000;
-  let timestampThreshold = Date.now() + dayLength;
+  let timeNow = Date.now();
+  let timestampThreshold = timeNow + dayLength;
   let return_message;
   
   try{
@@ -69,7 +70,58 @@ client.on("messageCreate", (message) => {
 		  
 		  console.log(fish);
 		  
-		  let description = "Next 5 windows:\n";
+		  let description = "";
+		  let nextStart = eorzeaTime.toEarth(fish.catchableRanges[0].start)/1000;
+		  let nextEnd = eorzeaTime.toEarth(fish.catchableRanges[0].end)/1000;
+		  let diff = 0;
+		  
+		  if(timeNow/1000 > nextStart){
+			  diff = ~~(nextEnd-(timeNow/1000));
+			  description += "Current window ends in: ";
+		  }else{
+			  diff = ~~(nextStart-(timeNow/1000));
+			  description += "Next window starts in: ";
+		  }
+		  
+		  if(diff >= 24*60*60){
+			  description += (~~(diff/(24*60*60))) + " days";
+		  }else if(diff >= 60*60){
+			  description += (~~(diff/(60*60))) + " hours";
+		  }else if(diff >= 60){
+			  description += (~~(diff/(60))) + " minutes";
+		  }else{
+			  description += (~~(diff)) + " seconds";
+		  }
+		  description += "\n"
+		  
+		  if(fish.startHour == 0 && fish.endHour == 24){
+			description += "All day";
+		  }else{
+			description += fish.startHour + " - " + fish.endHour + " ET";
+		  }
+		  
+		  if(fish.weatherSet.length != 0){
+			  description += " | ";
+			  if(fish.previousWeatherSet.length != 0){
+				  for(let i=0; i<fish.conditions.previousWeatherSet.length; i++){
+					  if(i != 0){
+						  description += ", ";
+					  }
+					  description += fish.conditions.previousWeatherSet[i].name_en;
+				  }
+				  description += " -> ";
+			  }
+			  for(let i=0; i<fish.conditions.weatherSet.length; i++){
+				  if(i != 0){
+					  description += ", ";
+				  }
+				  description += fish.conditions.weatherSet[i].name_en;
+			  }
+		  }
+		  
+		  description += "\n\n";
+		  
+		  description += "Next 5 windows:\n";
 		  for(let i=0; i < 5; i++){
 			  let start = eorzeaTime.toEarth(fish.catchableRanges[i].start)/1000;
 			  let end = eorzeaTime.toEarth(fish.catchableRanges[i].end)/1000;
