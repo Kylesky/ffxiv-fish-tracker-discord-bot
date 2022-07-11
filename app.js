@@ -204,6 +204,7 @@ client.on("messageCreate", (message) => {
 		 
 		  let rareFish = [];
 		  for(let i=0; rareFish.length < SCOUT_COUNT && i < uptimeList.length; i++){
+			  fishWatcher.updateRangesForFish(uptimeList[i].fish);
 			  if(eorzeaTime.toEarth(uptimeList[i].fish.catchableRanges[0].start) <= timestampThreshold){
 				  rareFish.push(uptimeList[i].fish);
 			  }
@@ -215,7 +216,6 @@ client.on("messageCreate", (message) => {
 		  }
 		  return_message += ".\n";
 		  for(let i=0; i<rareFish.length; i++){
-			  fishWatcher.updateRangesForFish(rareFish[i]);
 			  return_message += rareFish[i].name + " - ";
 			  
 			  for(let j=0; j<rareFish[i].catchableRanges.length && j < 5; j++){
