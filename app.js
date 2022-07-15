@@ -76,7 +76,7 @@ function getOceanFishCheckMessage(name, data){
 		description += "Ocean fishing voyage currently ongoing.\n";
 	}else{
 		diff = ~~(nextStart-(timeNow/1000));
-		description += "Next window starts in: " + timeDiffToString(diff) + "\n";
+		description += "Next voyage starts in: " + timeDiffToString(diff) + "\n";
 	}
   
 	description += "\n";
