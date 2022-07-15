@@ -6,6 +6,9 @@ import fishes from "./fish.js";
 import weatherService from "./weather.js";
 import fishWatcher from "./fishwatcher.js";
 
+import OCEAN_FISH_DATA from "./ocean-fish-data.js";
+import calculateVoyages from "./calculate-voyages.js";
+
 import _ from "underscore";
 import * as dateFns from "date-fns";
 import { Client, Intents } from "discord.js";
@@ -37,6 +40,99 @@ function checkNameOrAlias(name, object){
   return false;
 };
 
+function timeDiffToString(diff){
+	if(diff >= 24*60*60){
+		let d = (~~(diff/(24*60*60)));
+		if(d==1){ return "1 day"; }
+		else { return d + " days"; }
+	}else if(diff >= 60*60){
+		let d = (~~(diff/(60*60)));
+		if(d==1){ return "1 hour"; }
+		else { return d + " hours"; }
+	}else if(diff >= 60){
+		let d = (~~(diff/(60)));
+		if(d==1){ return "1 minute"; }
+		else { return d + " minutes"; }
+	}else{
+		let d = (~~(diff));
+		if(d==1){ return "1 second"; }
+		else { return d + " seconds"; }
+	}
+}
+
+function getOceanFishCheckMessage(name, data){
+	let timeNow = Date.now();
+	let filters = [];
+	for(let i=0; i<data.time.length; i++){
+		filters.push("" + data.locShort + data.time[i]);
+	}
+	
+	let voyages = calculateVoyages(Date.now(), 5, filters);
+		
+	let description = "";
+	let nextStart = voyages[0].date/1000;
+	let diff = 0;
+
+	if(timeNow/1000 > nextStart){
+		description += "Ocean fishing voyage currently ongoing.\n";
+	}else{
+		diff = ~~(nextStart-(timeNow/1000));
+		description += "Next window starts in: " + timeDiffToString(diff) + "\n";
+	}
+  
+	description += "\n";
+
+	description += "Next 5 voyages:\n";
+	for(let i=0; i < 5; i++){
+		let start = voyages[i].date/1000;
+		description += "<t:"+ (~~start) + "> (Stop " + voyages[i].stop + ")\n";
+	}
+	description += "\nBait Path:\n";
+
+	if(data.mooch){
+		let moochFishData = OCEAN_FISH_DATA.find(o => checkNameOrAlias(data.mooch, o));
+		description += moochFishData.bait + " ";
+		for(let i=0; i<moochFishData.tug; i++){
+			description += "!";
+		}
+		description += " - " + moochFishData.hookset + "\n";
+		
+		description += data.mooch + " ";
+		for(let i=0; i<data.tug; i++){
+			description += "!";
+		}
+		description += " - " + data.hookset + "\n";
+	}else{
+		description += data.bait + " ";
+		for(let i=0; i<data.tug; i++){
+			description += "!";
+		}
+		description += " - " + data.hookset + "\n";
+	}
+	
+	if(data.intuition){
+		description += "\nIntuition:\n";
+		for(let i=0; i<data.intuition.length; i++){
+			let intuitionFishData = OCEAN_FISH_DATA.find(o => checkNameOrAlias(data.intuition[i].name, o));
+			if(intuitionFishData.mooch){
+				let moochFishData = OCEAN_FISH_DATA.find(o => checkNameOrAlias(intuitionFishData.mooch, o));
+				description += data.intuition[i].count + " " + data.intuition[i].name + " - " + intuitionFishData.mooch + " - " + moochFishData.bait + "\n";
+			}else{
+				description += data.intuition[i].count + " " + data.intuition[i].name + " - " + intuitionFishData.bait + "\n";
+			}
+		}
+	}
+  
+  let returnEmbed = {
+	  title: data.name + " (" + data.location + ")",
+	  description: description
+  };
+  
+  console.log(returnEmbed);
+  
+  return returnEmbed;
+};
+
 const SCOUT_COUNT = 20;
 
 client.on("messageCreate", (message) => {
@@ -55,6 +151,13 @@ client.on("messageCreate", (message) => {
 	  switch (command) {
 		case "fishcheck":
 		  let fishName = args.join(" ");
+		  let data = OCEAN_FISH_DATA.find(o => o.name.localeCompare(fishName, undefined, {sensitivity: 'base'}) === 0);
+		  if(data){
+			  let returnEmbed = getOceanFishCheckMessage(fishName, data);
+			  message.channel.send({embeds: [returnEmbed]});
+			  break;
+		  }
+		  
 		  let info = FISH_INFO.find(o => o.name_en.localeCompare(fishName, undefined, {sensitivity: 'base'}) === 0);
 		  if(!info){
 			  message.channel.send(fishName + " not found");
@@ -78,22 +181,11 @@ client.on("messageCreate", (message) => {
 		  
 		  if(timeNow/1000 > nextStart){
 			  diff = ~~(nextEnd-(timeNow/1000));
-			  description += "Current window ends in: ";
+			  description += "Current window ends in: " + timeDiffToString(diff) + "\n";
 		  }else{
 			  diff = ~~(nextStart-(timeNow/1000));
-			  description += "Next window starts in: ";
+			  description += "Next window starts in: " + timeDiffToString(diff) + "\n";
 		  }
-		  
-		  if(diff >= 24*60*60){
-			  description += (~~(diff/(24*60*60))) + " days";
-		  }else if(diff >= 60*60){
-			  description += (~~(diff/(60*60))) + " hours";
-		  }else if(diff >= 60){
-			  description += (~~(diff/(60))) + " minutes";
-		  }else{
-			  description += (~~(diff)) + " seconds";
-		  }
-		  description += "\n"
 		  
 		  if(fish.startHour == 0 && fish.endHour == 24){
 			description += "All day";
@@ -276,9 +368,9 @@ client.on("messageCreate", (message) => {
 					  
 					  if(start > timestampThreshold) break;
 					  if(j == 0){
-						  return_message += "<t:"+ (~~(start/1000)) + ">";
+						  return_message += "<t:" + (~~(start/1000)) + ">";
 					  } else {
-						  return_message += ", <t:"+ (~~(start/1000)) + ">";
+						  return_message += ", <t:" + (~~(start/1000)) + ">";
 					  }
 				  }
 				return_message += "\n";
@@ -287,7 +379,17 @@ client.on("messageCreate", (message) => {
 		  
 		  message.channel.send(return_message);
 		  break;
-			
+		
+		// case "oceanfishvoyages":
+		  // return_message = "Upcoming voyages:\n";
+		  
+		  // let voyages = calculateVoyages(Date.now(), 10, null);
+		  // for(let i=0; i<voyages.length; i++){
+			  // return_message += "<t:" + (~~(voyages[i].date/1000)) + "> " + voyages[i].destTime + "\n";
+		  // }
+		  
+		  // message.channel.send(return_message);
+		  // break;
 	  }
   } catch (err) {
 	  message.channel.send(err.stack);
