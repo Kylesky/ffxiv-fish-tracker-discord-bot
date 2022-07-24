@@ -214,13 +214,17 @@ client.on("messageCreate", (message) => {
 		  
 		  description += "\n\n";
 		  
-		  description += "Next 5 windows:\n";
-		  for(let i=0; i < 5; i++){
-			  let start = eorzeaTime.toEarth(fish.catchableRanges[i].start)/1000;
-			  let end = eorzeaTime.toEarth(fish.catchableRanges[i].end)/1000;
-			  let difference = (end-start)/60;
-			  description += "<t:"+ (~~start) + "> - <t:" + (~~end) + "> (" + difference.toFixed(2) + " minutes)\n";
+		  if(fish.startHour != 0 || fish.endHour != 24 || fish.weatherSet.length != 0){
+			  description += "Next 5 windows:\n";
+			  for(let i=0; i < 5; i++){
+				  let start = eorzeaTime.toEarth(fish.catchableRanges[i].start)/1000;
+				  let end = eorzeaTime.toEarth(fish.catchableRanges[i].end)/1000;
+				  let difference = (end-start)/60;
+				  description += "<t:"+ (~~start) + "> - <t:" + (~~end) + "> (" + difference.toFixed(2) + " minutes)\n";
+			  }
 		  }
+		  
+		  
 		  description += "\nBait Path:\n";
 		  
 		  for(let i=0; i<fish.bait.path.length; i++){
