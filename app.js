@@ -179,7 +179,9 @@ client.on("messageCreate", (message) => {
 		  let nextEnd = eorzeaTime.toEarth(fish.catchableRanges[0].end)/1000;
 		  let diff = 0;
 		  
-		  if(timeNow/1000 > nextStart){
+		  if(fish.startHour == 0 && fish.endHour == 24 && fish.weatherSet.length == 0){
+			  description += "Fish is always up.\n";
+		  }else if(timeNow/1000 > nextStart){
 			  diff = ~~(nextEnd-(timeNow/1000));
 			  description += "Current window ends in: " + timeDiffToString(diff) + "\n";
 		  }else{
@@ -212,10 +214,10 @@ client.on("messageCreate", (message) => {
 			  }
 		  }
 		  
-		  description += "\n\n";
+		  description += "\n";
 		  
 		  if(fish.startHour != 0 || fish.endHour != 24 || fish.weatherSet.length != 0){
-			  description += "Next 5 windows:\n";
+			  description += "\nNext 5 windows:\n";
 			  for(let i=0; i < 5; i++){
 				  let start = eorzeaTime.toEarth(fish.catchableRanges[i].start)/1000;
 				  let end = eorzeaTime.toEarth(fish.catchableRanges[i].end)/1000;
